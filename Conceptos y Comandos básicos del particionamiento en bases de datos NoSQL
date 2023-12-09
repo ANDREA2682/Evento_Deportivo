@@ -1,0 +1,85 @@
+1. Requerimientos no funcionales.
+El proyecto elaborado no solo requiere tener acceso a la base de datos con el nombre de Evento Deportivo las 24 horas los 7 días de la semana, adicionalmente se necesita escalar el almacenamiento de los datos que se manejan en nuestra base de datos, de esta manera realizaremos una distribución equitativa de la información para no recargar uno de los nodos, para este objetivo se tendrán en cuenta los siguientes requerimientos no funcionales:
+? Como requerimiento principal es particionar la información de la base de datos Evento Deportivo.
+? Se debe realizar la partición de las colecciones en tres shard’s, en los cuales se almacenará la información de forma equitativa.
+? Cada uno de los Shard’s almacenara un porcentaje de información de las colecciones Deportistas, Jugadores y Equipos.
+? Cada uno de los Shard’s estará representado con numero de puerto asi:
+• “DESKTOP-KEHD2QP:20000”
+• “DESKTOP-KEHD2QP:20001”
+• “DESKTOP-KEHD2QP:20002”
+? El sistema debe garantizar el ingreso de información en las colecciones mencionadas.
+2. Particionamiento de la base de datos Evento Deportivo.
+El particionamiento de la base de datos Evento Deportivo está configurada en cada instancia de mongoDB así:
+Shard “DESKTOP-KEHD2QP:20001”
+? Inicialmente almacenara toda la información ingresada en cada una de las colecciones.
+? Permitirá mostrar la cantidad de información almacenada.
+Shard “DESKTOP-KEHD2QP:20000”
+Shard “DESKTOP-KEHD2QP:20002”
+? Inicialmente no almacenarán información.
+? Permitirán el particionamiento de la información almacenada en las colecciones de forma equitativa entre los tres Shard.
+2.1. Scripts.
+>cluster=new ShardingTest ({shards: 3, chunksize:1})
+Este comando nos permite crear 3 instancias en las cuales se realizará la partición de la carga de información.
+El sistema nos muestra los tres Shrad’s habilitados para el ejercicio
+En la carpeta data y la subcarpeta db encontraremos las carpetas creadas anteriormente:
+> db = (new Mongo("DESKTOP-KEHD2QP:20006")).getDB("eventoDeportivo")
+? En una consola diferente a la cual la tomaremos como el balanceador, en esta consola ejecutamos el comando anterior, este nos conecta a un puerto especial para manejar el balanceador y nos conecta con la base de datos EventoDeportivo
+? En la colección Deportistas, ingresamos 80.000 registros, el sistema nos muestra que se realizaron los ingresos.
+L >db.Jugadores.insertMany
+? Con este comando realizamos el ingreso de 6 registros en la colección Jugadores, el sistema nos indica que el ingreso se realizó de manera exitosa.
+> db.Equipos.insertMany
+? Con este comando realizamos el ingreso de 5 registros en la colección Equipos, el sistema nos indica que el ingreso se realizó de manera exitosa.
+? Verificamos que los datos ingresados en cada una de las colecciones se ha registros de manera correcta.
+? En una nueva consola, realizaremos una comprobación si se está realizando la partición de datos entre los Shards, en primer lugar verificaremos la partición de los datos de la colección Deportistas, para este ejercicio ejecutamos los siguientes comandos:
+>shard1 = new Mongo("DESKTOP-KEHD2QP:20000")
+>shard1DB = shard1.getDB("eventoDeportivo")
+>shard1DB.Deportistas.count()
+>shard2 = new Mongo("DESKTOP-KEHD2QP:20001")
+>shard2DB = shard2.getDB("eventoDeportivo")
+>shard2DB.Deportistas.count()
+>shard3 = new Mongo("DESKTOP-KEHD2QP:20002")
+>shard3DB = shard3.getDB("eventoDeportivo")
+>shard3DB.Deportistas.count()
+? Como podemos ver el sistema nos permite ver que la información de la colección Deportistas solo se esta almacenando en el Shard 2, con puerto 20001; esto nos indica que aun no esta habilitado el sistema de partición entre los 3 Shards.
+? Realizamos el mismo ejercicio con la colección Jugadores, utilizamos los siguientes comandos:
+>shard1 = new Mongo("DESKTOP-KEHD2QP:20000")
+>shard1DB = shard1.getDB("eventoDeportivo")
+>shard1DB.Jugadores.count()
+>shard2 = new Mongo("DESKTOP-KEHD2QP:20001")
+>shard2DB = shard2.getDB("eventoDeportivo")
+>shard2DB.Jugadores.count()
+>shard3 = new Mongo("DESKTOP-KEHD2QP:20002")
+>shard3DB = shard3.getDB("eventoDeportivo")
+>shard3DB.Jugadores.count()
+? Como podemos ver el sistema nos permite ver que la información de la colección Jugadores solo se está almacenando en el Shard 2, con puerto 20001; esto nos indica que aún no está habilitado el sistema de partición entre los 3 Shards.
+? Realizamos el mismo ejercicio con la colección Equipos, utilizamos los siguientes comandos:
+>shard1 = new Mongo("DESKTOP-KEHD2QP:20000")
+>shard1DB = shard1.getDB("eventoDeportivo")
+>shard1DB.Equipos.count()
+>shard2 = new Mongo("DESKTOP-KEHD2QP:20001")
+>shard2DB = shard2.getDB("eventoDeportivo")
+>shard2DB.Equipos.count()
+>shard3 = new Mongo("DESKTOP-KEHD2QP:20002")
+>shard3DB = shard3.getDB("eventoDeportivo")
+>shard3DB.Equipos.count()
+? Como podemos ver el sistema nos permite ver que la información de la colección Equipos solo se está almacenando en el Shard 2, con puerto 20001; esto nos indica que aún no está habilitado el sistema de partición entre los 3 Shards.
+A > shard1 = new Mongo("DESKTOP-KEHD2QP:20006")
+> sh.status()
+? Como observamos que aún no hay una partición de los datos vamos a verificar que el balancer este activo, para esto ejecutamos los dos comandos anteriores.
+?
+El status me informa que que el balancer no se encuentra activo.
+> sh.enableSharding("eventoDeportivo")
+? Este comando nos permite activar el particionamiento de la información que se encuentra en las colecciones.
+? El sistema nos muestra que OK, el particionamiento esta activo.
+>db.Deportistas.ensureIndex({author : 1})
+? Con este comando realizaremos un index, de esta manera enviara la colección Deportistas al shard 20001.
+>sh.shardCollection("eventoDeportivo.Deportistas", {author: 1})
+? Con este comando tomamos la colección Deportistas de la base de datos eventoDeportivo y le aplicamos el Shard.
+>sh.getBalancerState()
+? Consultamos el estado del balanceador, usamos el comando anterior.
+>sh.setBalancerState(true)
+? Para activar el balanceador usamos el comando balancerstate(true)
+>sh.isBalancerRunning()
+? Con este comando ejecutamos la solicitud de partición.
+> cluster.stop()
+? Detenemos la partición de los documentos.
