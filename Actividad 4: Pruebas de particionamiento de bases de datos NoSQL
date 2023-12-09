@@ -1,0 +1,25 @@
+Id Caso de Prueba Descripción Fecha Resultado Esperado 0001 Partición
+Verificar que las instancias de los Shards sean creadas correctamente. 12/004/2023
+Verificar los tres shard se encuentre creados correctamente.
+0002 Accesibilidad Ingresa documentos a las colecciones de Deportistas, Jugadores y Equipos. 12/004/2023
+Ingresar 80.000 documentos en la colección de Deportistas, 6 documentos en la colección de Jugadores y 5 documentos en la colección de Equipos. 0003 Validación Validar en que Shard se están almacenando los documentos ingresados. 12/004/2023
+Verificar en cada Shard los documentos de cada una de las colecciones. 0004 Activación Verificación del estado activo de los shards. 12/004/2023
+Verificar que los shards se encuentren activos, si no lo están realizar la activación. 0005 Validación balancer Validar que el balancer se encuentre en modo TRUE o activo. 12/004/2023
+Validar la ejecución de la partición.
+2. Ejecución de casos de prueba.
+Ejecución caso de prueba # 0001.
+Verificar los tres shard se encuentre creados correctamente
+Ejecución caso de prueba # 0002
+Ingresar 80.000 documentos en la colección de Deportistas, 6 documentos en la colección de Jugadores y 5 documentos en la colección de Equipos.
+Deportistas:
+Jugadores:
+Equipos:
+Ejecución caso de prueba # 0003
+Verificar en cada Shard los documentos de cada una de las colecciones
+Deportistas:
+Jugadores:
+Equipos:
+Ejecución caso de prueba # 0004
+Verificar que los shards se encuentren activos, si no lo están realizar la activación.
+Ejecución caso de prueba # 0005
+Validar la ejecución de la partición.
